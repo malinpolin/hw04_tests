@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from posts.forms import PostCreateForm
+from posts.forms import PostForm
 from posts.models import Post
 
 
@@ -18,7 +18,7 @@ class PostCreateFormTests(TestCase):
             text='Старый пост',
             author=cls.user
         )
-        cls.form = PostCreateForm()
+        cls.form = PostForm()
 
     def setUp(self):
         # Создаем авторизованный клиент

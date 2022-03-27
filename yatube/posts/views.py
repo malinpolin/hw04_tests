@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 
 from .models import Group, Post, User
-from .forms import PostCreateForm
+from .forms import PostForm
 
 
 def index(request):
@@ -69,14 +69,14 @@ def post_detail(request, post_id):
 
 @login_required
 def post_create(request):
-    form = PostCreateForm(request.POST or None)
+    form = PostForm(request.POST or None)
     if form.is_valid():
         post = form.save(commit=False)
         post.author = request.user
         post.pub_date = datetime.datetime.today()
         post.save()
         return redirect(f'/profile/{request.user.username}/')
-    form = PostCreateForm()
+    form = PostForm()
     template = 'posts/create_post.html'
     title = 'Новый пост'
     context = {
@@ -91,11 +91,11 @@ def post_edit(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     if request.user != post.author:
         return redirect(f'/posts/{post_id}')
-    form = PostCreateForm(request.POST or None, instance=post)
+    form = PostForm(request.POST or None, instance=post)
     if form.is_valid():
         form.save()
         return redirect(f'/posts/{post_id}')
-    form = PostCreateForm(instance=post)
+    form = PostForm(instance=post)
     template = 'posts/create_post.html'
     title = 'Редактировать пост'
     context = {

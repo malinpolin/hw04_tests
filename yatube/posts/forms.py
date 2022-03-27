@@ -1,9 +1,9 @@
 from django import forms
 
-from .models import Post, Group
+from posts.models import Post, Group
 
 
-class PostCreateForm(forms.ModelForm):
+class PostForm(forms.ModelForm):
     group = forms.ModelChoiceField(
         queryset=Group.objects.all(),
         required=False,
