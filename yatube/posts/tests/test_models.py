@@ -1,20 +1,17 @@
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from posts.models import Group, Post
-
-
-User = get_user_model()
+from posts.models import Group, Post, User
+from posts.tests import test_constant as const
 
 
 class PostModelTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='auth')
+        cls.user = User.objects.create_user(username=const.USERNAME_1)
         cls.group = Group.objects.create(
             title='Тестовая группа',
-            slug='test_slug',
+            slug=const.GROUP_SLUG_1,
             description='Тестовое описание',
         )
         cls.post = Post.objects.create(

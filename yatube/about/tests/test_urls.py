@@ -2,6 +2,8 @@ from http import HTTPStatus
 
 from django.test import TestCase, Client
 
+from about.tests import test_constants as const
+
 
 class StaticPagesURLTests(TestCase):
     def setUp(self):
@@ -22,8 +24,8 @@ class StaticPagesURLTests(TestCase):
     def test_about_url_uses_correct_template(self):
         """Проверка шаблона для адресов /about/"""
         templates_url_names = {
-            'about/author.html': '/about/author/',
-            'about/tech.html': '/about/tech/',
+            const.ABOUT_AUTHOR_TEMPLATE: '/about/author/',
+            const.ABOUT_TECH_TEMPLATE: '/about/tech/',
         }
         for template, url in templates_url_names.items():
             with self.subTest(url=url):

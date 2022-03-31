@@ -1,202 +1,90 @@
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.test import Client, TestCase
 from django.urls import reverse
 from django import forms
 
-from posts.models import Post, Group
-
-
-User = get_user_model()
+from posts.models import Post, Group, User
+from posts.tests import test_constant as const
 
 
 class PostPagesTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user_1 = User.objects.create_user(username='TestUser1')
-        cls.user_2 = User.objects.create_user(username='TestUser2')
+        cls.user_1 = User.objects.create_user(username=const.USERNAME_1)
+        cls.user_2 = User.objects.create_user(username=const.USERNAME_2)
         cls.group_one = Group.objects.create(
-            title='Тестовая группа_1',
-            slug='test_slug_1',
-            description='Тестовое описание',
+            title=const.GROUP_TITLE_1,
+            slug=const.GROUP_SLUG_1,
+            description=const.GROUP_DESCRIPTION,
         )
         cls.group_two = Group.objects.create(
-            title='Тестовая группа_2',
-            slug='test_slug_2',
-            description='Тестовое описание',
+            title=const.GROUP_TITLE_2,
+            slug=const.GROUP_SLUG_2,
+            description=const.GROUP_DESCRIPTION,
         )
-        # Только не плачь, пожалуйста, над моим кодом)
-        # Всего 36 постов, из них:
-        # - по 18 постов у user_1 и user_2
-        # - по 12 постов в группе 1, в группе 2, без группы
-        cls.post_1 = Post.objects.create(
+        posts_count = 36
+        cls.create_test_base(cls, posts_count)
+        cls.post = Post.objects.filter(
             author=cls.user_1,
-            text='Тестовый пост без группы',
+            group=cls.group_one
+        ).first()
+        cls.POST_DETAIL_URL = reverse(
+            'posts:post_detail',
+            kwargs={'post_id': cls.post.id}
         )
-        cls.post_2 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост с группой 1',
-            group=cls.group_one,
+        cls.POST_EDIT_URL = reverse(
+            'posts:post_edit',
+            kwargs={'post_id': cls.post.id}
         )
-        cls.post_3 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост с группой 2',
-            group=cls.group_two,
-        )
-        cls.post_4 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост с группой 1',
-            group=cls.group_one,
-        )
-        cls.post_5 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост с группой 2',
-            group=cls.group_two,
-        )
-        cls.post_6 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост без группы',
-        )
-        cls.post_7 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост без группы',
-        )
-        cls.post_8 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост с группой 2',
-            group=cls.group_two,
-        )
-        cls.post_9 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост с группой 1',
-            group=cls.group_one,
-        )
-        cls.post_10 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост с группой 1',
-            group=cls.group_one,
-        )
-        cls.post_11 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост с группой 2',
-            group=cls.group_two,
-        )
-        cls.post_12 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост без группы',
-        )
-        cls.post_13 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост без группы',
-        )
-        cls.post_14 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост с группой 1',
-            group=cls.group_one,
-        )
-        cls.post_15 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост с группой 1',
-            group=cls.group_one,
-        )
-        cls.post_16 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост с группой 2',
-            group=cls.group_two,
-        )
-        cls.post_17 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост без группы',
-        )
-        cls.post_18 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост с группой 2',
-            group=cls.group_two,
-        )
-        cls.post_19 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост без группы',
-        )
-        cls.post_20 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост с группой 1',
-            group=cls.group_one,
-        )
-        cls.post_21 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост с группой 2',
-            group=cls.group_two,
-        )
-        cls.post_22 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост с группой 1',
-            group=cls.group_one,
-        )
-        cls.post_23 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост с группой 2',
-            group=cls.group_two,
-        )
-        cls.post_24 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост с группой 1',
-            group=cls.group_one,
-        )
-        cls.post_25 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост без группы',
-        )
-        cls.post_26 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост с группой 1',
-            group=cls.group_one,
-        )
-        cls.post_27 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост с группой 2',
-            group=cls.group_two,
-        )
-        cls.post_28 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост без группы',
-        )
-        cls.post_29 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост с группой 1',
-            group=cls.group_one,
-        )
-        cls.post_30 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост с группой 2',
-            group=cls.group_two,
-        )
-        cls.post_31 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост без группы',
-        )
-        cls.post_32 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост с группой 1',
-            group=cls.group_one,
-        )
-        cls.post_33 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост без группы',
-        )
-        cls.post_34 = Post.objects.create(
-            author=cls.user_1,
-            text='Тестовый пост с группой 2',
-            group=cls.group_two,
-        )
-        cls.post_35 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост без группы',
-        )
-        cls.post_36 = Post.objects.create(
-            author=cls.user_2,
-            text='Тестовый пост с группой 2',
-            group=cls.group_two,
-        )
+
+    def create_test_base(self, posts_count):
+        posts_list = []
+        for i in range(1, (posts_count // 2) + 1):
+            if i % 3 == 0:
+                posts_list.append(
+                    Post(
+                        author=self.user_1,
+                        text='Тестовый пост без группы'
+                    )
+                )
+                posts_list.append(
+                    Post(
+                        author=self.user_2,
+                        text='Тестовый пост без группы'
+                    )
+                )
+            elif i % 2 == 0:
+                posts_list.append(
+                    Post(
+                        author=self.user_1,
+                        group=self.group_two,
+                        text='Тестовый пост группы 2'
+                    )
+                )
+                posts_list.append(
+                    Post(
+                        author=self.user_2,
+                        group=self.group_two,
+                        text='Тестовый пост группы 2'
+                    )
+                )
+            else:
+                posts_list.append(
+                    Post(
+                        author=self.user_1,
+                        group=self.group_one,
+                        text='Тестовый пост группы 1'
+                    )
+                )
+                posts_list.append(
+                    Post(
+                        author=self.user_2,
+                        group=self.group_one,
+                        text='Тестовый пост группы 1'
+                    )
+                )
+        Post.objects.bulk_create(posts_list)
 
     def setUp(self):
         # Создаем авторизованный клиент
@@ -225,10 +113,10 @@ class PostPagesTest(TestCase):
         self,
         url,
         expected_count,
-        url_arg={}
+        url_kwargs={}
     ):
         """На каждой странице переданного URL требуемое кол-во постов"""
-        paginator_count = 10
+        paginator_count = settings.PAGINATOR_COUNT
         page_ten_count = expected_count // paginator_count
         page_count = (
             expected_count // paginator_count + 1
@@ -237,7 +125,7 @@ class PostPagesTest(TestCase):
         )
         while page_ten_count > 0:
             response = self.authorized_client.get(
-                reverse(url, kwargs=url_arg) + f'?page={page_ten_count}'
+                reverse(url, kwargs=url_kwargs) + f'?page={page_ten_count}'
             )
             self.assertEqual(
                 len(response.context['page_obj']),
@@ -247,34 +135,22 @@ class PostPagesTest(TestCase):
         else:
             if page_count > page_ten_count:
                 response = self.authorized_client.get(
-                    reverse(url, kwargs=url_arg) + f'?page={page_count}'
+                    reverse(url, kwargs=url_kwargs) + f'?page={page_count}'
                 )
                 self.assertEqual(
                     len(response.context['page_obj']),
-                    expected_count % 10,
+                    expected_count % paginator_count,
                 )
 
     def test_pages_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
         templates_pages_names = {
-            reverse('posts:index'): 'posts/index.html',
-            reverse('posts:post_create'): 'posts/create_post.html',
-            reverse(
-                'posts:group_list',
-                kwargs={'slug': self.group_one.slug},
-            ): 'posts/group_list.html',
-            reverse(
-                'posts:profile',
-                kwargs={'username': self.user_1.username},
-            ): 'posts/profile.html',
-            reverse(
-                'posts:post_edit',
-                kwargs={'post_id': self.post_1.id},
-            ): 'posts/create_post.html',
-            reverse(
-                'posts:post_detail',
-                kwargs={'post_id': self.post_2.id},
-            ): 'posts/post_detail.html',
+            const.INDEX_URL: const.INDEX_TEMPLATE,
+            const.POST_CREATE_URL: const.POST_CREATE_TEMPLATE,
+            const.GROUP_LIST_URL: const.GROUP_LIST_TEMPLATE,
+            const.PROFILE_URL: const.PROFILE_TEMPLATE,
+            self.POST_EDIT_URL: const.POST_EDIT_TEMPLATE,
+            self.POST_DETAIL_URL: const.POST_DETAIL_TEMPLATE,
         }
         for reverse_name, template in templates_pages_names.items():
             with self.subTest(reverse_name=reverse_name):
@@ -283,7 +159,7 @@ class PostPagesTest(TestCase):
 
     def test_index_show_correct_context(self):
         """Шаблон index сформирован с правильным контекстом."""
-        response = self.authorized_client.get(reverse('posts:index'))
+        response = self.authorized_client.get(const.INDEX_URL)
         expected_first_object = Post.objects.latest('pub_date')
         self.check_context_for_list_pages(
             response.context,
@@ -302,12 +178,7 @@ class PostPagesTest(TestCase):
 
     def test_group_list_show_correct_context(self):
         """Шаблон group_list сформирован с правильным контекстом."""
-        response = self.authorized_client.get(
-            reverse(
-                'posts:group_list',
-                kwargs={'slug': self.group_one.slug},
-            )
-        )
+        response = self.authorized_client.get(const.GROUP_LIST_URL)
         expected_first_object = Post.objects.filter(
             group=self.group_one
         ).latest('pub_date')
@@ -324,46 +195,32 @@ class PostPagesTest(TestCase):
         """На страницы group_list передаётся ожидаемое количество объектов"""
         url = 'posts:group_list'
         expected_count = Post.objects.filter(group=self.group_one).count()
-        url_arg = {'slug': self.group_one.slug}
+        url_kwargs = {'slug': self.group_one.slug}
         self.check_pages_contains_correct_count_records(
             url,
             expected_count,
-            url_arg
+            url_kwargs
         )
 
     def test_post_detail_show_correct_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
-        response = self.authorized_client.get(
-            reverse(
-                'posts:post_detail',
-                kwargs={'post_id': self.post_1.id},
-            )
-        )
+        response = self.authorized_client.get(self.POST_DETAIL_URL)
         self.assertEqual(
             response.context.get('post').author.id,
-            self.post_1.author.id
+            self.post.author.id
         )
         self.assertEqual(
             response.context.get('post').text,
-            self.post_1.text
+            self.post.text
         )
-        post_count = Post.objects.filter(
-            author=self.post_1.author
-        ).count()
-        self.assertEqual(response.context.get('post_count'), post_count)
         self.assertEqual(
             response.context.get('title'),
-            'Пост ' + self.post_1.text[:30]
+            'Пост ' + self.post.text[:30]
         )
 
     def test_profile_show_correct_context(self):
         """Шаблон profile сформирован с правильным контекстом."""
-        response = self.authorized_client.get(
-            reverse(
-                'posts:profile',
-                kwargs={'username': self.user_1.username},
-            )
-        )
+        response = self.authorized_client.get(const.PROFILE_URL)
         expected_first_object = Post.objects.filter(
             author=self.user_1
         ).latest('pub_date')
@@ -371,10 +228,6 @@ class PostPagesTest(TestCase):
             response.context,
             expected_first_object
         )
-        post_count = Post.objects.filter(
-            author=self.user_1
-        ).count()
-        self.assertEqual(response.context.get('post_count'), post_count)
         self.assertEqual(
             response.context.get('title'),
             'Профайл пользователя ' + self.user_1.username
@@ -384,16 +237,16 @@ class PostPagesTest(TestCase):
         """На страницы profile передаётся ожидаемое количество объектов"""
         url = 'posts:profile'
         expected_count = Post.objects.filter(author=self.user_1).count()
-        url_arg = {'username': self.user_1.username}
+        url_kwargs = {'username': self.user_1.username}
         self.check_pages_contains_correct_count_records(
             url,
             expected_count,
-            url_arg
+            url_kwargs
         )
 
     def test_create_show_correct_context(self):
         """Шаблон create сформирован с правильным контекстом."""
-        response = self.authorized_client.get(reverse('posts:post_create'))
+        response = self.authorized_client.get(const.POST_CREATE_URL)
         form_fields = {
             'text': forms.fields.CharField,
             'group': forms.fields.ChoiceField,
@@ -406,12 +259,7 @@ class PostPagesTest(TestCase):
 
     def test_edit_show_correct_context(self):
         """Шаблон edit сформирован с правильным контекстом."""
-        response = self.authorized_client.get(
-            reverse(
-                'posts:post_edit',
-                kwargs={'post_id': self.post_6.id},
-            )
-        )
+        response = self.authorized_client.get(self.POST_EDIT_URL)
         form_fields = {
             'text': forms.fields.CharField,
             'group': forms.fields.ChoiceField,
@@ -422,32 +270,29 @@ class PostPagesTest(TestCase):
                 self.assertIsInstance(form_field, expected)
         self.assertEqual(
             response.context.get('post').id,
-            self.post_6.id
+            self.post.id
         )
         self.assertEqual(response.context.get('title'), 'Редактировать пост')
         self.assertTrue(response.context.get('is_edit'))
 
     def test_new_post(self):
         """Проверка нового поста"""
-        post_37 = Post.objects.create(
-            author=self.user_2,
-            text='Новый пост с группой 2',
+        new_post = Post.objects.create(
+            author=self.user_1,
+            text='Новый пост в группе 2',
             group=self.group_two,
         )
         reverse_names_correct_pages = (
-            reverse('posts:index'),
+            const.INDEX_URL,
             reverse(
                 'posts:group_list',
-                kwargs={'slug': post_37.group.slug},
+                kwargs={'slug': new_post.group.slug},
             ),
-            reverse(
-                'posts:profile',
-                kwargs={'username': post_37.author.username},
-            )
+            const.PROFILE_URL,
         )
         for reverse_name in reverse_names_correct_pages:
             response = self.authorized_client.get(reverse_name)
-            self.assertIn(post_37, response.context['page_obj'])
+            self.assertIn(new_post, response.context['page_obj'])
         reverse_names_incorrect_pages = (
             reverse(
                 'posts:group_list',
@@ -455,9 +300,9 @@ class PostPagesTest(TestCase):
             ),
             reverse(
                 'posts:profile',
-                kwargs={'username': self.user_1.username},
+                kwargs={'username': self.user_2.username},
             )
         )
         for reverse_name in reverse_names_incorrect_pages:
             response = self.authorized_client.get(reverse_name)
-            self.assertNotIn(post_37, response.context['page_obj'])
+            self.assertNotIn(new_post, response.context['page_obj'])

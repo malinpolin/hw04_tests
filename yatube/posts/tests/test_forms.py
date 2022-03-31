@@ -1,19 +1,16 @@
-from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
 from posts.forms import PostForm
-from posts.models import Post
-
-
-User = get_user_model()
+from posts.models import Post, User
+from posts.tests import test_constant as const
 
 
 class PostCreateFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='TestUser')
+        cls.user = User.objects.create_user(username=const.USERNAME_1)
         Post.objects.create(
             text='Старый пост',
             author=cls.user

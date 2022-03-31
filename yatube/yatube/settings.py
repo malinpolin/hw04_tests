@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'sorl.thumbnail',
 ]
 
 MIDDLEWARE = [
@@ -113,10 +114,26 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
+# Login URLs
+
 LOGIN_URL = 'users:login'
 
 LOGIN_REDIRECT_URL = 'posts:index'
 
+# Email
+
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 EMPTY_VALUE_DISPLAY = '-пусто-'
+
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
+
+# Media folder
+
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Paginator
+
+PAGINATOR_COUNT = 10

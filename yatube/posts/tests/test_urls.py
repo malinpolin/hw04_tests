@@ -1,24 +1,21 @@
 from http import HTTPStatus
 
-from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 
-from posts.models import Post, Group
-
-
-User = get_user_model()
+from posts.models import Post, Group, User
+from posts.tests import test_constant as const
 
 
 class PostURLTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user_author = User.objects.create_user(username='PostAuthor')
-        cls.user = User.objects.create_user(username='NotPostAuthor')
+        cls.user_author = User.objects.create_user(username=const.USERNAME_1)
+        cls.user = User.objects.create_user(username=const.USERNAME_2)
         cls.group = Group.objects.create(
-            title='Тестовая группа',
-            slug='Test_slug',
-            description='Тестовое описание',
+            title=const.GROUP_TITLE_1,
+            slug=const.GROUP_SLUG_1,
+            description=const.GROUP_DESCRIPTION,
         )
         cls.post = Post.objects.create(
             author=cls.user_author,
@@ -36,35 +33,30 @@ class PostURLTests(TestCase):
         self.authorized_client.force_login(self.user)
 
     def test_public_url_for_unauthorized_user(self):
-        """Проверяем доступность страниц для любого пользователя"""
-        url_names = (
-            '/',
-            f'/group/{self.group.slug}/',
-            f'/profile/{self.user.username}/',
-            f'/posts/{self.post.id}/'
-        )
-        for url in url_names:
+        """Проверяем доступность страниц для анонимного пользователя"""
+        url_names_codes = {
+            '/': HTTPStatus.OK,
+            f'/group/{self.group.slug}/': HTTPStatus.OK,
+            f'/profile/{self.user.username}/': HTTPStatus.OK,
+            f'/posts/{self.post.id}/': HTTPStatus.OK,
+            '/unknown_page/': HTTPStatus.NOT_FOUND,
+        }
+        for url, code in url_names_codes.items():
             with self.subTest(url=url):
                 response = self.guest_client.get(url)
-                self.assertEqual(response.status_code, HTTPStatus.OK)
-
-    def test_unknown_page_for_unauthorized_user(self):
-        """Запрос к несуществующей странице для любого пользователя"""
-        url = '/unknown_page/'
-        response = self.guest_client.get(url)
-        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+                self.assertEqual(response.status_code, code)
 
     def test_create_url_for_authorized_user(self):
-        """Доступность /create/ для авторизованного пользователя"""
-        url = '/create/'
-        response = self.authorized_client.get(url)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
-
-    def test_edit_url_for_author(self):
-        """Проверяем доступность страницы /posts/edit/ для автора"""
-        url = f'/posts/{self.post.id}/edit/'
-        response = self.authorized_client_author.get(url)
-        self.assertEqual(response.status_code, HTTPStatus.OK)
+        """Доступность /create/ и /posts/edit/
+        для авторизованного пользователя (автора)
+        """
+        urls = (
+            '/create/',
+            f'/posts/{self.post.id}/edit/',
+        )
+        for url in urls:
+            response = self.authorized_client_author.get(url)
+            self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_create_url_redirect_anonymous(self):
         """Страница /create/ перенаправляет анонимного пользователя"""
@@ -83,12 +75,12 @@ class PostURLTests(TestCase):
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
         templates_url_names = {
-            '/': 'posts/index.html',
-            f'/group/{self.group.slug}/': 'posts/group_list.html',
-            f'/profile/{self.user.username}/': 'posts/profile.html',
-            f'/posts/{self.post.id}/': 'posts/post_detail.html',
-            f'/posts/{self.post.id}/edit/': 'posts/create_post.html',
-            '/create/': 'posts/create_post.html',
+            '/': const.INDEX_TEMPLATE,
+            f'/group/{self.group.slug}/': const.GROUP_LIST_TEMPLATE,
+            f'/profile/{self.user.username}/': const.PROFILE_TEMPLATE,
+            f'/posts/{self.post.id}/': const.POST_DETAIL_TEMPLATE,
+            f'/posts/{self.post.id}/edit/': const.POST_EDIT_TEMPLATE,
+            '/create/': const.POST_CREATE_TEMPLATE,
         }
         for url, template in templates_url_names.items():
             with self.subTest(url=url):

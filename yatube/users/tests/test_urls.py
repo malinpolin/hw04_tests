@@ -1,10 +1,10 @@
 from http import HTTPStatus
 
-from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 
+from posts.models import User
 
-User = get_user_model()
+from users.tests import test_constants as const
 
 
 class UserURLTests(TestCase):
@@ -60,16 +60,17 @@ class UserURLTests(TestCase):
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
         templates_url_names = {
-            'users/signup.html': '/auth/signup/',
-            'users/login.html': '/auth/login/',
-            'users/password_change_form.html': '/auth/password_change/',
-            'users/password_change_done.html': '/auth/password_change/done/',
-            'users/password_reset_form.html': '/auth/password_reset/',
-            'users/password_reset_done.html': '/auth/password_reset/done/',
-            'users/password_reset_confirm.html':
+            const.SIGNUP_TEMPLATE: '/auth/signup/',
+            const.LOGIN_TEMPLATE: '/auth/login/',
+            const.PASSWORD_CHANGE_TEMPLATE: '/auth/password_change/',
+            const.PASSWORD_CHANGE_DONE_TEMPLATE:
+                '/auth/password_change/done/',
+            const.PASSWORD_RESET_TEMPLATE: '/auth/password_reset/',
+            const.PASSWORD_RESET_DONE_TEMPLATE: '/auth/password_reset/done/',
+            const.PASSWORD_RESET_CONFIRM_TEMPLATE:
                 '/auth/reset/<uidb64>/<token>/',
-            'users/password_reset_complete.html': '/auth/reset/done/',
-            'users/logged_out.html': '/auth/logout/',
+            const.PASSWORD_RESET_COMPLETE_TEMPLATE: '/auth/reset/done/',
+            const.LOGOUT_TEMPLATE: '/auth/logout/',
         }
         for template, url in templates_url_names.items():
             with self.subTest(url=url):

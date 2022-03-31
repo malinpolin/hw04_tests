@@ -1,14 +1,14 @@
 import base64
 
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UsernameField
 from django.test import Client, TestCase
 from django.urls import reverse
 from django import forms
 
+from posts.models import User
 
-User = get_user_model()
+from users.tests import test_constants as const
 
 
 class UserViewsTests(TestCase):
@@ -26,6 +26,10 @@ class UserViewsTests(TestCase):
             else user_b64_str
         )
         cls.token = cls.TOKEN_GENERATOR.make_token(cls.user)
+        cls.PASSWORD_RESET_CONFIRM_URL = reverse(
+            'users:password_reset_confirm',
+            kwargs={'uidb64': cls.user_b64, 'token': cls.token}
+        )
 
     def setUp(self):
         # Создаем авторизованный клиент
@@ -35,23 +39,18 @@ class UserViewsTests(TestCase):
     def test_about_pages_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон"""
         templates_pages_names = {
-            reverse('users:login'): 'users/login.html',
-            reverse('users:signup'): 'users/signup.html',
-            reverse('users:password_change'):
-                'users/password_change_form.html',
-            reverse('users:password_change_done'):
-                'users/password_change_done.html',
-            reverse('users:password_reset'):
-                'users/password_reset_form.html',
-            reverse('users:password_reset_done'):
-                'users/password_reset_done.html',
-            reverse(
-                'users:password_reset_confirm',
-                kwargs={'uidb64': self.user_b64, 'token': self.token}
-            ): 'users/password_reset_confirm.html',
-            reverse('users:password_reset_complete'):
-                'users/password_reset_complete.html',
-            reverse('users:logout'): 'users/logged_out.html',
+            const.LOGIN_URL: const.LOGIN_TEMPLATE,
+            const.SIGNUP_URL: const.SIGNUP_TEMPLATE,
+            const.PASSWORD_CHANGE_URL: const.PASSWORD_CHANGE_TEMPLATE,
+            const.PASSWORD_CHANGE_DONE_URL:
+                const.PASSWORD_CHANGE_DONE_TEMPLATE,
+            const.PASSWORD_RESET_URL: const.PASSWORD_RESET_TEMPLATE,
+            const.PASSWORD_RESET_DONE_URL: const.PASSWORD_RESET_DONE_TEMPLATE,
+            self.PASSWORD_RESET_CONFIRM_URL:
+                const.PASSWORD_RESET_CONFIRM_TEMPLATE,
+            const.PASSWORD_RESET_COMPLETE_URL:
+                const.PASSWORD_RESET_COMPLETE_TEMPLATE,
+            const.LOGOUT_URL: const.LOGOUT_TEMPLATE,
         }
 
         for url, template in templates_pages_names.items():
@@ -60,7 +59,7 @@ class UserViewsTests(TestCase):
 
     def test_sugnup_use_correct_context(self):
         """Шаблон signup сформирован с правильным контекстом."""
-        response = self.authorized_client.get(reverse('users:signup'))
+        response = self.authorized_client.get(const.SIGNUP_URL)
         form_fields = {
             'first_name': forms.fields.CharField,
             'last_name': forms.fields.CharField,

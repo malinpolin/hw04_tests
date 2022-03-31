@@ -8,7 +8,7 @@
         <div class="card-header">{{ title }}</div>
         <div class="card-body">
           {% include 'includes/check_form_errors.html' %}
-          <form method="post" 
+          <form method="post" enctype="multipart/form-data"
             {% if is_edit %}
               action="{% url 'posts:post_edit' post.id %}"
             {% else %} 
